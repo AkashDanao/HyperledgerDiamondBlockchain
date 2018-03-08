@@ -32,10 +32,13 @@ type SmartContract struct {
 Structure tags are used by encoding/json library
 */
 type Tuna struct {
-	Vessel string `json:"vessel"`
-	Timestamp string `json:"timestamp"`
-	Location  string `json:"location"`
-	Holder  string `json:"holder"`
+	Clarity string `json:"clarity"`
+	Color string `json:"color"`
+	Cut  string `json:"cut"`
+	Carat  string `json:"carat"`
+	Certification  string `json:"cert"`
+	Name string `json:"name"`
+	TransId string `json:"transid"`
 }
 
 /*
@@ -97,16 +100,10 @@ Will add test data (10 tuna catches)to our network
  */
 func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Response {
 	tuna := []Tuna{
-		Tuna{Vessel: "923F", Location: "67.0006, -70.5476", Timestamp: "1504054225", Holder: "Miriam"},
-		Tuna{Vessel: "M83T", Location: "91.2395, -49.4594", Timestamp: "1504057825", Holder: "Dave"},
-		Tuna{Vessel: "T012", Location: "58.0148, 59.01391", Timestamp: "1493517025", Holder: "Igor"},
-		Tuna{Vessel: "P490", Location: "-45.0945, 0.7949", Timestamp: "1496105425", Holder: "Amalea"},
-		Tuna{Vessel: "S439", Location: "-107.6043, 19.5003", Timestamp: "1493512301", Holder: "Rafa"},
-		Tuna{Vessel: "J205", Location: "-155.2304, -15.8723", Timestamp: "1494117101", Holder: "Shen"},
-		Tuna{Vessel: "S22L", Location: "103.8842, 22.1277", Timestamp: "1496104301", Holder: "Leila"},
-		Tuna{Vessel: "EI89", Location: "-132.3207, -34.0983", Timestamp: "1485066691", Holder: "Yuan"},
-		Tuna{Vessel: "129R", Location: "153.0054, 12.6429", Timestamp: "1485153091", Holder: "Carlo"},
-		Tuna{Vessel: "49W4", Location: "51.9435, 8.2735", Timestamp: "1487745091", Holder: "Fatima"},
+		Tuna{Clarity: "913F", Color: "red", Cut: "good", Carat: "1",Certification:"IGI",Name: "Red Diamond",TransId:"dvbadjhbvdvadb7bvwebvuwvwbvuwebbvewbuew84be"},
+		Tuna{Clarity: "913F", Color: "blue", Cut: "good", Carat: "1",Certification:"HRD",Name: "Blue Diamond",TransId:"dgkhwr7h4iubg37g3b4ubge83b4u7ewurjdqw6te26"},
+		Tuna{Clarity: "913F", Color: "yellow", Cut: "good", Carat: "1",Certification:"GIA",Name: "Yellow Diamond",TransId:"evfb2734ghi3hgubg28hg82h4gg8nhg82g47fy432f"},
+
 	}
 
 	i := 0
@@ -128,11 +125,11 @@ This method takes in five arguments (attributes to be saved in the ledger).
  */
 func (s *SmartContract) recordTuna(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 5 {
-		return shim.Error("Incorrect number of arguments. Expecting 5")
+	if len(args) != 8 {
+		return shim.Error("Incorrect number of arguments. Expecting 7")
 	}
 
-	var tuna = Tuna{ Vessel: args[1], Location: args[2], Timestamp: args[3], Holder: args[4] }
+	var tuna = Tuna{Clarity: args[1], Color: args[2], Cut: args[3], Carat: args[4] , Certification: args[5], Name: args[6],TransId: args[7]}
 
 	tunaAsBytes, _ := json.Marshal(tuna)
 	err := APIstub.PutState(args[0], tunaAsBytes)
@@ -211,7 +208,7 @@ func (s *SmartContract) changeTunaHolder(APIstub shim.ChaincodeStubInterface, ar
 	json.Unmarshal(tunaAsBytes, &tuna)
 	// Normally check that the specified argument is a valid holder of tuna
 	// we are skipping this check for this example
-	tuna.Holder = args[1]
+	tuna.Carat = args[1]
 
 	tunaAsBytes, _ = json.Marshal(tuna)
 	err := APIstub.PutState(args[0], tunaAsBytes)

@@ -86,7 +86,6 @@ return{
 	},
 	add_tuna: function(req, res){
 		console.log("submit recording of a tuna catch: ");
-
 		var array = req.params.tuna.split("-");
 		console.log(array);
 
@@ -95,7 +94,10 @@ return{
 		var location = array[1]
 		var vessel = array[4]
 		var holder = array[3]
+		var certification = array[5]
+		var name = array[6]
 
+		console.log("certification "+certification)
 
 		var fabric_client = new Fabric_Client();
 
@@ -111,6 +113,7 @@ return{
 		console.log('Store path:'+store_path);
 		var tx_id = null;
 
+		console.log("before fabric client")
 		// create the key value store as defined in the fabric-client/config/default.json 'key-value-store' setting
 		Fabric_Client.newDefaultKeyValueStore({ path: store_path
 		}).then((state_store) => {
@@ -143,11 +146,11 @@ return{
 		        //targets : --- letting this default to the peers assigned to the channel
 		        chaincodeId: 'tuna-app',
 		        fcn: 'recordTuna',
-		        args: [key, vessel, location, timestamp, holder],
+		        args: [key, vessel, location, timestamp, holder, certification, name, tx_id._transaction_id],
 		        chainId: 'mychannel',
 		        txId: tx_id
 		    };
-			console.log(" transaction request ******* " + request);
+
 		    // send the transaction proposal to the peers
 		    return channel.sendTransactionProposal(request);
 		}).then((results) => {
