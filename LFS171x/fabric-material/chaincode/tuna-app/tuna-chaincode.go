@@ -39,6 +39,8 @@ type Tuna struct {
 	Certification  string `json:"cert"`
 	Name string `json:"name"`
 	TransId string `json:"transid"`
+	Holder string `json:"holdername"`
+	TimeStamp string `json:"timeStamp"`
 }
 
 /*
@@ -100,9 +102,9 @@ Will add test data (10 tuna catches)to our network
  */
 func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Response {
 	tuna := []Tuna{
-		Tuna{Clarity: "913F", Color: "red", Cut: "good", Carat: "1",Certification:"IGI",Name: "Red Diamond",TransId:"dvbadjhbvdvadb7bvwebvuwvwbvuwebbvewbuew84be"},
-		Tuna{Clarity: "913F", Color: "blue", Cut: "good", Carat: "1",Certification:"HRD",Name: "Blue Diamond",TransId:"dgkhwr7h4iubg37g3b4ubge83b4u7ewurjdqw6te26"},
-		Tuna{Clarity: "913F", Color: "yellow", Cut: "good", Carat: "1",Certification:"GIA",Name: "Yellow Diamond",TransId:"evfb2734ghi3hgubg28hg82h4gg8nhg82g47fy432f"},
+		Tuna{Clarity: "913F", Color: "red", Cut: "good", Carat: "1",Certification:"IGI",Name: "Red Diamond",TransId:"dvbadjhbvdvadb7bvwebvuwvwbvuwebbvewbuew84be",Holder:"Akshay",TimeStamp:""},
+		Tuna{Clarity: "913F", Color: "blue", Cut: "good", Carat: "1",Certification:"HRD",Name: "Blue Diamond",TransId:"dgkhwr7h4iubg37g3b4ubge83b4u7ewurjdqw6te26",Holder:"Akash",TimeStamp:""},
+		Tuna{Clarity: "913F", Color: "yellow", Cut: "good", Carat: "1",Certification:"GIA",Name: "Yellow Diamond",TransId:"evfb2734ghi3hgubg28hg82h4gg8nhg82g47fy432f",Holder:"Kapil",TimeStamp:""},
 
 	}
 
@@ -125,11 +127,11 @@ This method takes in five arguments (attributes to be saved in the ledger).
  */
 func (s *SmartContract) recordTuna(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 8 {
-		return shim.Error("Incorrect number of arguments. Expecting 7")
+	if len(args) != 10 {
+		return shim.Error("Incorrect number of arguments. Expecting 10")
 	}
 
-	var tuna = Tuna{Clarity: args[1], Color: args[2], Cut: args[3], Carat: args[4] , Certification: args[5], Name: args[6],TransId: args[7]}
+	var tuna = Tuna{Clarity: args[1], Color: args[2], Cut: args[3], Carat: args[4] , Certification: args[5], Name: args[6],TransId: args[7],Holder: args[8],TimeStamp:args[9]}
 
 	tunaAsBytes, _ := json.Marshal(tuna)
 	err := APIstub.PutState(args[0], tunaAsBytes)
@@ -195,8 +197,8 @@ This function takes in 2 arguments, tuna id and new holder name.
  */
 func (s *SmartContract) changeTunaHolder(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 2")
+	if len(args) != 4 {
+		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
 
 	tunaAsBytes, _ := APIstub.GetState(args[0])
@@ -208,7 +210,9 @@ func (s *SmartContract) changeTunaHolder(APIstub shim.ChaincodeStubInterface, ar
 	json.Unmarshal(tunaAsBytes, &tuna)
 	// Normally check that the specified argument is a valid holder of tuna
 	// we are skipping this check for this example
-	tuna.Carat = args[1]
+	tuna.Holder = args[1]
+	tuna.TransId = args[2]
+	tuna.TimeStamp = args[3]
 
 	tunaAsBytes, _ = json.Marshal(tuna)
 	err := APIstub.PutState(args[0], tunaAsBytes)

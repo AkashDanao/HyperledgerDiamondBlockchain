@@ -90,12 +90,14 @@ return{
 		console.log(array);
 
 		var key = array[0]
-		var timestamp = array[2]
-		var location = array[1]
-		var vessel = array[4]
-		var holder = array[3]
+		var color = array[2]
+		var cut = array[1]
+		var carat = array[4]
+		var clarity = array[3]
 		var certification = array[5]
 		var name = array[6]
+		var holderName = array[7]
+		var timestamp = array[8]
 
 		console.log("certification "+certification)
 
@@ -146,7 +148,7 @@ return{
 		        //targets : --- letting this default to the peers assigned to the channel
 		        chaincodeId: 'tuna-app',
 		        fcn: 'recordTuna',
-		        args: [key, vessel, location, timestamp, holder, certification, name, tx_id._transaction_id],
+		        args: [key, color, cut, carat, clarity, certification, name, tx_id._transaction_id,holderName,timestamp],
 		        chainId: 'mychannel',
 		        txId: tx_id
 		    };
@@ -321,6 +323,7 @@ return{
 		var array = req.params.holder.split("-");
 		var key = array[0]
 		var holder = array[1];
+		var timestamp = array[2]
 
 		var fabric_client = new Fabric_Client();
 
@@ -368,7 +371,7 @@ return{
 		        //targets : --- letting this default to the peers assigned to the channel
 		        chaincodeId: 'tuna-app',
 		        fcn: 'changeTunaHolder',
-		        args: [key, holder],
+		        args: [key, holder,tx_id._transaction_id,timestamp],
 		        chainId: 'mychannel',
 		        txId: tx_id
 		    };
