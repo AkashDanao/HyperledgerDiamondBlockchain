@@ -41,6 +41,7 @@ type Tuna struct {
 	TransId string `json:"transid"`
 	Holder string `json:"holdername"`
 	TimeStamp string `json:"timeStamp"`
+	Type string `json:"type"`
 }
 
 /*
@@ -102,9 +103,9 @@ Will add test data (10 tuna catches)to our network
  */
 func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Response {
 	tuna := []Tuna{
-		Tuna{Clarity: "913F", Color: "red", Cut: "good", Carat: "1",Certification:"IGI",Name: "Red Diamond",TransId:"dvbadjhbvdvadb7bvwebvuwvwbvuwebbvewbuew84be",Holder:"Akshay",TimeStamp:""},
-		Tuna{Clarity: "913F", Color: "blue", Cut: "good", Carat: "1",Certification:"HRD",Name: "Blue Diamond",TransId:"dgkhwr7h4iubg37g3b4ubge83b4u7ewurjdqw6te26",Holder:"Akash",TimeStamp:""},
-		Tuna{Clarity: "913F", Color: "yellow", Cut: "good", Carat: "1",Certification:"GIA",Name: "Yellow Diamond",TransId:"evfb2734ghi3hgubg28hg82h4gg8nhg82g47fy432f",Holder:"Kapil",TimeStamp:""},
+		Tuna{Clarity: "913F", Color: "red", Cut: "good", Carat: "1",Certification:"IGI",Name: "Red Diamond",TransId:"dvbadjhbvdvadb7bvwebvuwvwbvuwebbvewbuew84be",Holder:"Akshay",TimeStamp:"", Type: "Add"},
+		Tuna{Clarity: "913F", Color: "blue", Cut: "good", Carat: "1",Certification:"HRD",Name: "Blue Diamond",TransId:"dgkhwr7h4iubg37g3b4ubge83b4u7ewurjdqw6te26",Holder:"Akash",TimeStamp:"", Type: "Add"}, 
+		Tuna{Clarity: "913F", Color: "yellow", Cut: "good", Carat: "1",Certification:"GIA",Name: "Yellow Diamond",TransId:"evfb2734ghi3hgubg28hg82h4gg8nhg82g47fy432f",Holder:"Kapil",TimeStamp:"", Type: "Add"}, 
 
 	}
 
@@ -127,11 +128,11 @@ This method takes in five arguments (attributes to be saved in the ledger).
  */
 func (s *SmartContract) recordTuna(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 10 {
+	if len(args) != 11 {
 		return shim.Error("Incorrect number of arguments. Expecting 10")
 	}
 
-	var tuna = Tuna{Clarity: args[1], Color: args[2], Cut: args[3], Carat: args[4] , Certification: args[5], Name: args[6],TransId: args[7],Holder: args[8],TimeStamp:args[9]}
+	var tuna = Tuna{Clarity: args[1], Color: args[2], Cut: args[3], Carat: args[4] , Certification: args[5], Name: args[6],TransId: args[7],Holder: args[8],TimeStamp:args[9], Type:args[10]}
 
 	tunaAsBytes, _ := json.Marshal(tuna)
 	err := APIstub.PutState(args[0], tunaAsBytes)
@@ -197,8 +198,8 @@ This function takes in 2 arguments, tuna id and new holder name.
  */
 func (s *SmartContract) changeTunaHolder(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 4 {
-		return shim.Error("Incorrect number of arguments. Expecting 3")
+	if len(args) != 5 {
+		return shim.Error("Incorrect number of arguments. Expecting 5")
 	}
 
 	tunaAsBytes, _ := APIstub.GetState(args[0])
@@ -213,6 +214,7 @@ func (s *SmartContract) changeTunaHolder(APIstub shim.ChaincodeStubInterface, ar
 	tuna.Holder = args[1]
 	tuna.TransId = args[2]
 	tuna.TimeStamp = args[3]
+	tuna.Type = args[4]
 
 	tunaAsBytes, _ = json.Marshal(tuna)
 	err := APIstub.PutState(args[0], tunaAsBytes)
