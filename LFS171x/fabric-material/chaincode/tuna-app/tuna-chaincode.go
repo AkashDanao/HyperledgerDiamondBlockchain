@@ -42,6 +42,7 @@ type Tuna struct {
 	Holder string `json:"holdername"`
 	TimeStamp string `json:"timeStamp"`
 	Type string `json:"type"`
+	Image string `json:"image"`
 }
 
 /*
@@ -128,11 +129,11 @@ This method takes in five arguments (attributes to be saved in the ledger).
  */
 func (s *SmartContract) recordTuna(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 11 {
-		return shim.Error("Incorrect number of arguments. Expecting 10")
+	if len(args) != 12 {
+		return shim.Error("Incorrect number of arguments. Expecting 12")
 	}
 
-	var tuna = Tuna{Clarity: args[1], Color: args[2], Cut: args[3], Carat: args[4] , Certification: args[5], Name: args[6],TransId: args[7],Holder: args[8],TimeStamp:args[9], Type:args[10]}
+	var tuna = Tuna{Clarity: args[1], Color: args[2], Cut: args[3], Carat: args[4] , Certification: args[5], Name: args[6],TransId: args[7],Holder: args[8],TimeStamp:args[9], Type:args[10],Image: args[11]}
 
 	tunaAsBytes, _ := json.Marshal(tuna)
 	err := APIstub.PutState(args[0], tunaAsBytes)

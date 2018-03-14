@@ -86,19 +86,34 @@ return{
 	},
 	add_tuna: function(req, res){
 		console.log("submit recording of a tuna catch: ");
-		var array = req.params.tuna.split("-");
-		console.log(array);
+		// var array = req.params.tuna.split("-");
+		// console.log(array);
 
-		var key = array[0]
-		var color = array[2]
-		var cut = array[1]
-		var carat = array[4]
-		var clarity = array[3]
-		var certification = array[5]
-		var name = array[6]
-		var holderName = array[7]
-		var timestamp = array[8]
-		var type = array[9]
+		// var key = array[0]
+		// var color = array[2]
+		// var cut = array[1]
+		// var carat = array[4]
+		// var clarity = array[3]
+		// var certification = array[5]
+		// var name = array[6]
+		// var holderName = array[7]
+		// var timestamp = array[8]
+		// var type = array[9]
+		console.log(" request body " + req)
+
+		var key = req.body.key;
+		var color = req.body.color;
+		var cut = req.body.cut;
+		var carat = req.body.carat;
+		var clarity = req.body.clarity;
+		var certification = req.body.certification;
+		var name = req.body.name;
+		var holderName = req.body.holderName;
+		var timestamp = req.body.timestamp;
+		var type = req.body.type;
+		var image = req.body.image;
+
+
 
 		console.log("certification "+certification)
 
@@ -144,17 +159,17 @@ return{
 		    console.log("Assigning transaction_id: ", tx_id._transaction_id);
 
 		    // recordTuna - requires 5 args, ID, vessel, location, timestamp,holder - ex: args: ['10', 'Hound', '-12.021, 28.012', '1504054225', 'Hansel'], 
-		    // send proposal to endorser
+			// send proposal to endorser
+			
 		    const request = {
 		        //targets : --- letting this default to the peers assigned to the channel
 		        chaincodeId: 'tuna-app',
 		        fcn: 'recordTuna',
-		        args: [key, color, cut, carat, clarity, certification, name, tx_id._transaction_id,holderName,timestamp,type],
+		        args: [key, clarity, color, cut, carat, certification, name, tx_id._transaction_id,holderName,timestamp,type, image],
 		        chainId: 'mychannel',
 		        txId: tx_id
 		    };
-
-		    // send the transaction proposal to the peers
+			// send the transaction proposal to the peers
 		    return channel.sendTransactionProposal(request);
 		}).then((results) => {
 		    var proposalResponses = results[0];
