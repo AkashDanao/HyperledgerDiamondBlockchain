@@ -43,6 +43,8 @@ type Tuna struct {
 	TimeStamp string `json:"timeStamp"`
 	Type string `json:"type"`
 	Image string `json:"image"`
+	Latitude string `json:"latitude"`
+	Longitude string `json:"longitude"`
 }
 
 /*
@@ -65,8 +67,8 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 	// Retrieve the requested Smart Contract function and arguments
 	function, args := APIstub.GetFunctionAndParameters()
 	// Route to the appropriate handler function to interact with the ledger
-	if function == "queryTuna" {
-		return s.queryTuna(APIstub, args)
+	if function == "queryTunaHistory" {
+		return s.queryTunaHistory(APIstub, args)
 	} else if function == "initLedger" {
 		return s.initLedger(APIstub)
 	} else if function == "recordTuna" {
@@ -75,6 +77,8 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 		return s.queryAllTuna(APIstub)
 	} else if function == "changeTunaHolder" {
 		return s.changeTunaHolder(APIstub, args)
+	}else if function == "updateLatLong"{
+		return s.updateLatLong(APIstub,args)
 	}
 
 	return shim.Error("Invalid Smart Contract function name.")
@@ -87,16 +91,46 @@ It takes one argument -- the key for the tuna in question
  */
 func (s *SmartContract) queryTuna(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
-	}
+	// if len(args) != 1 {
+	// 	return shim.Error("Incorrect number of arguments. Expecting 1")
+	// }
 
-	tunaAsBytes, _ := APIstub.GetState(args[0])
-	if tunaAsBytes == nil {
-		return shim.Error("Could not locate tuna")
-	}
-	return shim.Success(tunaAsBytes)
+	// tunaAsBytes, _ := APIstub.GetState(args[0])
+	// if tunaAsBytes == nil {
+	// 	return shim.Error("Could not locate tuna")
+	// }
+	// return shim.Success(tunaAsBytes)
+
+
+	fmt.Println("Entering Query Food information")
+
+    // Assuming food key is at zero index
+    historyIer, err := APIstub.GetHistoryForKey(args[0])
+
+    if err != nil {
+        errMsg := fmt.Sprintf("[ERROR] cannot retrieve history of food record with id <%s>, due to %s", args[0], err)
+        fmt.Println(errMsg)
+        return shim.Error(errMsg)
+    }
+
+    result := make([]Tuna, 0)
+    for historyIer.HasNext() {
+        modification, err := historyIer.Next()
+        if err != nil {
+            errMsg := fmt.Sprintf("[ERROR] cannot read food record modification, id <%s>, due to %s", args[0], err)
+            fmt.Println(errMsg)
+            return shim.Error(errMsg)
+        }
+        var food Tuna
+        json.Unmarshal(modification.Value, &food)
+        result = append(result, food)
+    }
+
+    outputAsBytes, _ := json.Marshal(&result)                   
+    return shim.Success(outputAsBytes)
 }
+
+
 
 /*
  * The initLedger method *
@@ -104,9 +138,9 @@ Will add test data (10 tuna catches)to our network
  */
 func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Response {
 	tuna := []Tuna{
-		Tuna{Clarity: "913F", Color: "red", Cut: "good", Carat: "1",Certification:"IGI",Name: "Red Diamond",TransId:"dvbadjhbvdvadb7bvwebvuwvwbvuwebbvewbuew84be",Holder:"Akshay",TimeStamp:"", Type: "Add"},
-		Tuna{Clarity: "913F", Color: "blue", Cut: "good", Carat: "1",Certification:"HRD",Name: "Blue Diamond",TransId:"dgkhwr7h4iubg37g3b4ubge83b4u7ewurjdqw6te26",Holder:"Akash",TimeStamp:"", Type: "Add"}, 
-		Tuna{Clarity: "913F", Color: "yellow", Cut: "good", Carat: "1",Certification:"GIA",Name: "Yellow Diamond",TransId:"evfb2734ghi3hgubg28hg82h4gg8nhg82g47fy432f",Holder:"Kapil",TimeStamp:"", Type: "Add"}, 
+		Tuna{Clarity: "913F", Color: "red", Cut: "good", Carat: "1",Certification:"IGI",Name: "Red Diamond",TransId:"dvbadjhbvdvadb7bvwebvuwvwbvuwebbvewbuew84be",Holder:"Akshay",TimeStamp:"", Type: "Add",Image:"",Latitude:"18.45",Longitude:"73.565"},
+		Tuna{Clarity: "913F", Color: "blue", Cut: "good", Carat: "1",Certification:"HRD",Name: "Blue Diamond",TransId:"dgkhwr7h4iubg37g3b4ubge83b4u7ewurjdqw6te26",Holder:"Akash",TimeStamp:"", Type: "Add",Image:"",Latitude:"18.45",Longitude:"73.565"}, 
+		Tuna{Clarity: "913F", Color: "yellow", Cut: "good", Carat: "1",Certification:"GIA",Name: "Yellow Diamond",TransId:"evfb2734ghi3hgubg28hg82h4gg8nhg82g47fy432f",Holder:"Kapil",TimeStamp:"", Type: "Add",Image:"",Latitude:"18.45",Longitude:"73.565"}, 
 
 	}
 
@@ -129,11 +163,11 @@ This method takes in five arguments (attributes to be saved in the ledger).
  */
 func (s *SmartContract) recordTuna(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 12 {
-		return shim.Error("Incorrect number of arguments. Expecting 12")
+	if len(args) != 14 {
+		return shim.Error("Incorrect number of arguments. Expecting 14")
 	}
 
-	var tuna = Tuna{Clarity: args[1], Color: args[2], Cut: args[3], Carat: args[4] , Certification: args[5], Name: args[6],TransId: args[7],Holder: args[8],TimeStamp:args[9], Type:args[10],Image: args[11]}
+	var tuna = Tuna{Clarity: args[1], Color: args[2], Cut: args[3], Carat: args[4] , Certification: args[5], Name: args[6],TransId: args[7],Holder: args[8],TimeStamp:args[9], Type:args[10],Image: args[11],Latitude: args[12],Longitude: args[13]}
 
 	tunaAsBytes, _ := json.Marshal(tuna)
 	err := APIstub.PutState(args[0], tunaAsBytes)
@@ -199,8 +233,8 @@ This function takes in 2 arguments, tuna id and new holder name.
  */
 func (s *SmartContract) changeTunaHolder(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 5 {
-		return shim.Error("Incorrect number of arguments. Expecting 5")
+	if len(args) != 7 {
+		return shim.Error("Incorrect number of arguments. Expecting 7")
 	}
 
 	tunaAsBytes, _ := APIstub.GetState(args[0])
@@ -216,6 +250,8 @@ func (s *SmartContract) changeTunaHolder(APIstub shim.ChaincodeStubInterface, ar
 	tuna.TransId = args[2]
 	tuna.TimeStamp = args[3]
 	tuna.Type = args[4]
+	tuna.Latitude = args[5]
+	tuna.Longitude = args[6]
 
 	tunaAsBytes, _ = json.Marshal(tuna)
 	err := APIstub.PutState(args[0], tunaAsBytes)
@@ -226,6 +262,64 @@ func (s *SmartContract) changeTunaHolder(APIstub shim.ChaincodeStubInterface, ar
 	return shim.Success(nil)
 }
 
+func (s *SmartContract) queryTunaHistory(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+    fmt.Println("Entering Query Food information")
+    fmt.Sprintf("Hi There")
+    // Assuming food key is at zero index
+    historyIer, err := APIstub.GetHistoryForKey(args[0])
+
+    if err != nil {
+        errMsg := fmt.Sprintf("[ERROR] cannot retrieve history of food record with id <%s>, due to %s", args[0], err)
+        fmt.Println(errMsg)
+        return shim.Error(errMsg)
+    }
+
+    result := make([]Tuna, 0)
+    for historyIer.HasNext() {
+        modification, err := historyIer.Next()
+        if err != nil {
+            errMsg := fmt.Sprintf("[ERROR] cannot read food record modification, id <%s>, due to %s", args[0], err)
+            fmt.Println(errMsg)
+            return shim.Error(errMsg)
+        }
+        var food Tuna
+        json.Unmarshal(modification.Value, &food)
+        result = append(result, food)
+    }
+
+    outputAsBytes, _ := json.Marshal(&result)                   
+    return shim.Success(outputAsBytes)
+ }
+
+func (s *SmartContract) updateLatLong(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+
+	if len(args) !=  5{
+		return shim.Error("Incorrect number of arguments. Expecting 5")
+	}
+
+	tunaAsBytes, _ := APIstub.GetState(args[0])
+	if tunaAsBytes == nil {
+		return shim.Error("Could not locate tuna")
+	}
+	tuna := Tuna{}
+
+	json.Unmarshal(tunaAsBytes, &tuna)
+	// Normally check that the specified argument is a valid holder of tuna
+	// we are skipping this check for this example
+	tuna.TransId = args[1]
+	tuna.TimeStamp = args[2]
+	tuna.Latitude = args[3]
+	tuna.Longitude = args[4]
+
+	tunaAsBytes, _ = json.Marshal(tuna)
+	err := APIstub.PutState(args[0], tunaAsBytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("Failed to change tuna location: %s", args[0]))
+	}
+
+	return shim.Success(nil)
+}
+ 
 /*
  * main function *
 calls the Start function 
